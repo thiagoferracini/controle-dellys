@@ -2,34 +2,78 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Controle de Operações RNF | Ailog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Gestão RNF | HOK & OESA</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --primary: #0d2c54; --accent: #1a4a8d; --success: #27ae60; --hok: #0d2c54; --oesa: #e67e22; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
-        
-        /* Header Profissional */
-        .header { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 30px; text-align: center; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* Painel de Controle */
-        .control-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; display: flex; gap: 20px; align-items: center; }
-        .input-url { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; }
-        .btn-import { background: #f8f9fa; border: 2px dashed var(--accent); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--accent); transition: 0.3s; }
-        .btn-import:hover { background: #eef2f7; }
-        .btn-sync { background: var(--success); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        :root { 
+            --primary: #0d2c54; 
+            --accent: #1a4a8d; 
+            --success: #27ae60; 
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --hok: #0d2c54; 
+            --oesa: #e67e22; 
+            --bg: #f4f7f6; 
+        }
 
-        /* Grid de Cards */
-        .grid-unidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; padding: 20px; position: relative; cursor: pointer; transition: 0.3s; border-top: 6px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
+        
+        /* Cabeçalho Profissional */
+        .header { 
+            background: linear-gradient(135deg, var(--primary), var(--accent)); 
+            color: white; padding: 30px; text-align: center; border-radius: 15px; 
+            margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+
+        /* Painel de Controle Superior */
+        .control-panel { 
+            background: white; padding: 25px; border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; 
+            display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;
+        }
+
+        .input-group { flex: 1; min-width: 300px; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; color: var(--primary); }
+        
+        .input-url { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
+            font-size: 0.85rem; font-family: monospace; box-sizing: border-box;
+        }
+
+        .btn-import { 
+            background: #f8f9fa; border: 2px dashed var(--accent); padding: 10px 20px; 
+            border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--accent); 
+            transition: 0.3s; text-align: center; flex: 0.5;
+        }
+
+        .btn-sync { 
+            background: var(--success); color: white; border: none; padding: 13px 30px; 
+            border-radius: 8px; font-weight: bold; cursor: pointer; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;
+        }
+        .btn-sync:hover { background: #219150; transform: translateY(-2px); }
+
+        /* Grid de Unidades */
+        .grid-unidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        
+        .card { 
+            background: white; border-radius: 12px; padding: 20px; position: relative; 
+            cursor: pointer; transition: 0.3s; border-top: 8px solid #ccc; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+        }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
         .card.hok { border-top-color: var(--hok); }
         .card.oesa { border-top-color: var(--oesa); }
         
-        .card h3 { margin: 0; font-size: 1.1rem; color: var(--primary); }
-        .card .cnpj { font-size: 0.8rem; color: #888; margin: 5px 0; }
-        .card .perc-container { margin-top: 15px; }
-        .progress-bar { background: #eee; border-radius: 10px; height: 10px; width: 100%; margin-top: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--success); transition: 0.5s; }
+        .card h3 { margin: 0; font-size: 1.1rem; color: var(--primary); text-transform: uppercase; }
+        .card .cnpj { font-size: 0.8rem; color: #888; margin: 5px 0; font-family: monospace; }
+        
+        /* Barra de Progresso (Meta 92%) */
+        .perc-container { margin-top: 15px; }
+        .perc-text { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold; }
+        .progress-bar { background: #eee; border-radius: 10px; height: 10px; width: 100%; margin-top: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: 0.5s; }
 
         /* Modal / Pop-up */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
@@ -37,35 +81,40 @@
         .close { position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 24px; color: #999; }
         
         .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 10px; }
-        .finance-item label { font-size: 0.75rem; color: #666; display: block; }
-        .finance-item span { font-weight: bold; color: var(--primary); }
+        .finance-item label { font-size: 0.75rem; color: #666; display: block; margin-bottom: 3px; }
+        .finance-item span { font-weight: bold; color: var(--primary); font-size: 1rem; }
 
         .actions-area { margin-top: 20px; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-        .btn-tool { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 0.8rem; background: white; }
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-tool { padding: 8px 15px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 0.8rem; background: white; font-weight: 500; transition: 0.2s; }
         .btn-tool.active { background: var(--accent); color: white; border-color: var(--accent); }
         
-        textarea { width: 100%; height: 80px; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; padding: 10px; box-sizing: border-box; resize: none; }
+        textarea { width: 100%; height: 90px; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; padding: 12px; box-sizing: border-box; resize: none; font-family: inherit; }
+        
         #fileInput { display: none; }
+        .status-msg { font-size: 0.8rem; margin-top: 5px; color: var(--success); font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1 style="margin:0">Controle de Atividades RNF</h1>
-        <p style="opacity:0.9">Gestão de Unidades HOK & OESA | Ailog</p>
+        <h1 style="margin:0">Controle Operacional RNF</h1>
+        <p style="opacity:0.9; margin-top:5px;">Diretoria Ailog | Gestão de Atividades HOK & OESA</p>
     </div>
 
     <div class="control-panel">
-        <div style="flex:1">
-            <label style="font-size: 0.8rem; font-weight: bold;">Link do Banco de Dados (Google Apps Script):</label>
-            <input type="text" id="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZIxpUkA/exec" class="input-url" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
+        <div class="input-group">
+            <label>URL do Motor Google (Apps Script /exec):</label>
+            <input type="text" id="scriptUrl" class="input-url" placeholder="Cole o link do Google Script aqui..." value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
         </div>
+        
         <div class="btn-import" onclick="document.getElementById('fileInput').click()">
-            📂 Importar Planilha Diária
+            📂 Selecionar Planilha Diária
+            <div id="fileNameDisplay" class="status-msg"></div>
         </div>
-        <input type="file" id="fileInput" accept=".xlsx, .xls">
-        <button class="btn-sync" onclick="sincronizar()">Sincronizar Tudo</button>
+        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv">
+
+        <button class="btn-sync" onclick="sincronizar()">Sincronizar com Google Sheets</button>
     </div>
 
     <div id="containerUnidades" class="grid-unidades">
@@ -78,105 +127,122 @@
             <p id="mCnpj" class="cnpj"></p>
             
             <div class="finance-grid">
-                <div class="finance-item"><label>A Recolher</label><span id="vRecolher">R$ 0,00</span></div>
+                <div class="finance-item"><label>Total a Recolher</label><span id="vRecolher">R$ 0,00</span></div>
                 <div class="finance-item"><label>Recolhido</label><span id="vRecolhido">R$ 0,00</span></div>
                 <div class="finance-item"><label>Pausado</label><span id="vPausado">R$ 0,00</span></div>
                 <div class="finance-item"><label>Arquivado</label><span id="vArquivado">R$ 0,00</span></div>
             </div>
 
             <div class="actions-area">
-                <strong>Ações Executadas:</strong>
+                <strong>Ação Realizada:</strong>
                 <div class="btn-group">
                     <button class="btn-tool" onclick="toggleBtn(this)">📧 E-mail</button>
                     <button class="btn-tool" onclick="toggleBtn(this)">💬 WhatsApp</button>
                     <button class="btn-tool" onclick="toggleBtn(this)">📞 Ligação</button>
                     <button class="btn-tool" onclick="toggleBtn(this)">👥 Reunião</button>
                 </div>
-                <textarea id="txtAcao" placeholder="Descreva os detalhes da ação executada..."></textarea>
+                <textarea id="txtAcao" placeholder="Descreva os detalhes do contato ou motivo da pendência..."></textarea>
             </div>
-            <button class="btn-sync" style="width:100%; margin-top:15px;" onclick="salvarNota()">Salvar no Dashboard</button>
+            <button class="btn-sync" style="width:100%; margin-top:20px; background: var(--primary);" onclick="salvarNota()">Guardar no Dashboard</button>
         </div>
     </div>
 
 <script>
-    // Unidades base conforme sua lista
-    let unidades = [
-        {grupo: 'HOK', filial: 'ITARIRI', cnpj: '20705907/0005-97'},
-        {grupo: 'HOK', filial: 'BIGUAÇU', cnpj: '20705907/0002-44'},
-        {grupo: 'HOK', filial: 'CONTAGEM', cnpj: '20705907/0016-40'},
-        {grupo: 'OESA', filial: 'JARAGUA DO SUL', cnpj: '81611931/0001-28'},
-        {grupo: 'OESA', filial: 'BRASILIA', cnpj: '81611931/0022-52'},
-        {grupo: 'OESA', filial: 'CONTAGEM', cnpj: '81611931/0029-29'}
-        // O código processa qualquer unidade presente na planilha que contenha HOK ou OESA
-    ];
-
     let dadosFull = [];
     let idxAtivo = null;
 
-    // Função para importar planilha e cruzar dados
+    // Processamento do Arquivo Excel
     document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        document.getElementById('fileNameDisplay').innerText = "Lendo: " + file.name;
+
         const reader = new FileReader();
         reader.onload = function(event) {
             const data = new Uint8Array(event.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
-            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet);
             
-            // Filtra e organiza os dados da planilha
+            // Filtra HOK e OESA e mapeia as colunas da sua planilha
             dadosFull = json.filter(row => {
                 const nome = (row['NOME FANTASIA'] || "").toUpperCase();
                 return nome.includes("HOK") || nome.includes("OESA");
-            }).map(row => ({
-                nome: row['NOME FANTASIA'],
-                cnpj: row['CNPJ'],
-                perc: parseFloat(row['% RECOLHIDO'] || 0),
-                valorRecolher: row['VALOR A RECOLHER'] || 0,
-                valorRecolhido: row['VALOR RECOLHIDO'] || 0,
-                valorPausado: row['VALOR PAUSADO'] || 0,
-                valorArquivado: row['VALOR ARQUIVADO'] || 0,
-                grupo: row['NOME FANTASIA'].includes("HOK") ? "HOK" : "OESA",
-                acoes: [],
-                obs: ""
-            }));
+            }).map(row => {
+                let p = row['% RECOLHIDO'] || 0;
+                // Limpeza de percentual se vier como string "85%"
+                let pNum = typeof p === 'string' ? parseFloat(p.replace('%','').replace(',','.')) : p;
+                
+                return {
+                    nome: row['NOME FANTASIA'],
+                    cnpj: row['CNPJ'],
+                    perc: pNum,
+                    vTotal: row['VALOR TOTAL'] || 0,
+                    vRecolhido: row['VALOR RECOLHIDO'] || 0,
+                    vRecolher: row['VALOR A RECOLHER'] || 0,
+                    vPausado: row['VALOR PAUSADO'] || 0,
+                    vArquivado: row['VALOR ARQUIVADO'] || 0,
+                    grupo: row['NOME FANTASIA'].includes("HOK") ? "HOK" : "OESA",
+                    acoes: [],
+                    obs: ""
+                };
+            });
 
             renderizar();
         };
-        reader.readAsArrayBuffer(e.target.files[0]);
+        reader.readAsArrayBuffer(file);
     });
 
     function renderizar() {
         const container = document.getElementById('containerUnidades');
         container.innerHTML = "";
+        
         dadosFull.forEach((u, i) => {
             const card = document.createElement('div');
             card.className = `card ${u.grupo.toLowerCase()}`;
             card.onclick = () => abrirModal(i);
+            
+            // Cor da barra de progresso baseada na meta de 92%
+            let corBarra = u.perc >= 92 ? varColor('--success') : (u.perc > 0 ? varColor('--warning') : varColor('--danger'));
+
             card.innerHTML = `
-                <div style="font-size:0.7rem; font-weight:bold; color:#888">${u.grupo}</div>
+                <div style="font-size:0.7rem; font-weight:bold; color:#888; margin-bottom:5px;">${u.grupo}</div>
                 <h3>${u.nome}</h3>
-                <p class="cnpj">CNPJ: ${u.cnpj}</p>
+                <p class="cnpj">${u.cnpj}</p>
                 <div class="perc-container">
-                    <span style="font-size:0.9rem; font-weight:bold">${u.perc}% Recolhido</span>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${u.perc}%"></div></div>
+                    <div class="perc-text">
+                        <span>Recolha</span>
+                        <span>${u.perc.toFixed(2)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:${u.perc}%; background-color:${corBarra}"></div>
+                    </div>
                 </div>
-                ${u.obs ? `<p style="font-size:0.75rem; color:var(--accent); margin-top:10px;">📌 ${u.obs.substring(0,40)}...</p>` : ''}
+                ${u.obs ? `<p style="font-size:0.75rem; color:var(--accent); margin-top:12px; border-top:1px solid #eee; padding-top:8px;">📌 ${u.obs.substring(0,50)}...</p>` : ''}
             `;
             container.appendChild(card);
         });
     }
+
+    function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
     function abrirModal(i) {
         idxAtivo = i;
         const u = dadosFull[i];
         document.getElementById('mNome').innerText = u.nome;
         document.getElementById('mCnpj').innerText = "CNPJ: " + u.cnpj;
-        document.getElementById('vRecolher').innerText = "R$ " + u.valorRecolher.toLocaleString('pt-BR');
-        document.getElementById('vRecolhido').innerText = "R$ " + u.valorRecolhido.toLocaleString('pt-BR');
-        document.getElementById('vPausado').innerText = "R$ " + u.valorPausado.toLocaleString('pt-BR');
-        document.getElementById('vArquivado').innerText = "R$ " + u.valorArquivado.toLocaleString('pt-BR');
+        document.getElementById('vRecolher').innerText = "R$ " + u.vRecolher.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        document.getElementById('vRecolhido').innerText = "R$ " + u.vRecolhido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        document.getElementById('vPausado').innerText = "R$ " + u.vPausado.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        document.getElementById('vArquivado').innerText = "R$ " + u.vArquivado.toLocaleString('pt-BR', {minimumFractionDigits: 2});
         document.getElementById('txtAcao').value = u.obs;
         
-        // Reseta botões
-        document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
+        // Resetar botões de ação
+        document.querySelectorAll('.btn-tool').forEach(b => {
+            b.classList.remove('active');
+            if(u.acoes.includes(b.innerText)) b.classList.add('active');
+        });
+        
         document.getElementById('modalAtividade').style.display = "block";
     }
 
@@ -184,26 +250,38 @@
     function fecharModal() { document.getElementById('modalAtividade').style.display = "none"; }
 
     function salvarNota() {
-        const acoesAtivas = Array.from(document.querySelectorAll('.btn-tool.active')).map(b => b.innerText);
-        dadosFull[idxAtivo].acoes = acoesAtivas;
+        const acoesSelecionadas = Array.from(document.querySelectorAll('.btn-tool.active')).map(b => b.innerText);
+        dadosFull[idxAtivo].acoes = acoesSelecionadas;
         dadosFull[idxAtivo].obs = document.getElementById('txtAcao').value;
         fecharModal();
         renderizar();
     }
 
     function sincronizar() {
-        const url = document.getElementById('scriptUrl').value;
-        if(dadosFull.length === 0) return alert("Importe a planilha primeiro.");
-        
+        const url = document.getElementById('scriptUrl').value.trim();
+        if(!url) return alert("Por favor, insira a URL do Google Apps Script.");
+        if(dadosFull.length === 0) return alert("Importe uma planilha antes de sincronizar.");
+
+        const payload = {
+            data_importacao: new Date().toLocaleDateString('pt-BR'),
+            unidades: dadosFull
+        };
+
         fetch(url, {
             method: 'POST',
             mode: 'no-cors',
-            body: JSON.stringify({
-                data_importacao: new Date().toLocaleDateString(),
-                unidades: dadosFull
-            })
-        }).then(() => alert("Sincronizado com o Google Sheets!"));
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            alert("✅ Sincronização enviada ao Google Sheets com sucesso!");
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Erro ao conectar ao motor. Verifique a URL.");
+        });
     }
 </script>
+
 </body>
 </html>
