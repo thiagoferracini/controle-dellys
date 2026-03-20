@@ -10,17 +10,29 @@
         .header-blue { background-color: #0d2c54; color: white; padding: 40px; text-align: center; border-radius: 10px; margin-bottom: 20px; }
         .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .section-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; display: block; }
-        .script-url-display { font-size: 0.85rem; color: #666; margin-bottom: 10px; word-break: break-all; }
         
-        /* Área de Importação */
-        .import-box { border: 2px dashed #1a4a8d; border-radius: 8px; padding: 20px; text-align: center; background: #f8f9fa; cursor: pointer; }
-        .import-box:hover { background: #eef2f7; }
+        /* Onde você coloca o Link do Apps Script */
+        .url-input-container { margin-bottom: 20px; }
+        .label-url { font-size: 0.85rem; color: #666; margin-bottom: 5px; display: block; }
+        .input-url { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            background: #fdfdfd; 
+            font-family: monospace; 
+            font-size: 0.8rem;
+            box-sizing: border-box;
+        }
+
+        /* Área de Importação do Excel */
+        .import-box { border: 2px dashed #1a4a8d; border-radius: 8px; padding: 25px; text-align: center; background: #f8f9fa; cursor: pointer; transition: 0.2s; }
+        .import-box:hover { background: #eef2f7; border-color: #0d2c54; }
         
-        /* O Botão de Ação que você já tinha */
-        .btn-action { background-color: #0d2c54; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 15px; }
+        .btn-action { background-color: #0d2c54; color: white; width: 100%; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 20px; }
         .btn-action:hover { background-color: #1a4a8d; }
 
-        #status { font-size: 0.9rem; margin-top: 10px; color: #1a4a8d; font-weight: 500; }
+        #status { font-size: 0.9rem; margin-top: 15px; color: #1a4a8d; font-weight: bold; text-align: center; }
         #fileInput { display: none; }
     </style>
 </head>
@@ -34,82 +46,94 @@
     <div class="card">
         <span class="section-title">1. Importar Dados do Relatório Mestre</span>
         
-        <div class="script-url-display" id="scriptLink">
-            https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec
+        <div class="url-input-container">
+            <label class="label-url">Link do Motor (Google Apps Script URL):</label>
+            <input type="text" id="scriptUrl" class="input-url" placeholder="Cole aqui o link finalizado em /exec" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
         </div>
 
         <div class="import-box" onclick="document.getElementById('fileInput').click()">
-            <p id="msgUpload">Clique aqui para carregar a planilha <strong>AbastecimentoClientes.xlsx</strong></p>
+            <p id="msgUpload"><strong>Clique para selecionar a planilha</strong><br>Formato aceito: .xlsx ou .xls</p>
             <input type="file" id="fileInput" accept=".xlsx, .xls">
         </div>
         
-        <div id="status">Aguardando arquivo...</div>
+        <div id="status">Aguardando planilha...</div>
 
         <button class="btn-action" onclick="vincularDados()">Vincular Dados às Unidades</button>
     </div>
 
     <div class="card">
         <span class="section-title">2. Gestão de Unidades</span>
-        <p style="color: #666; font-size: 0.9rem;">As porcentagens serão atualizadas automaticamente após o vínculo acima.</p>
+        <p style="color: #666; font-size: 0.9rem;">As porcentagens serão processadas e enviadas para o motor assim que clicar no botão acima.</p>
     </div>
 
 <script>
     let dadosParaEnvio = [];
 
-    // Função que lê a planilha e prepara os dados
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        document.getElementById('status').innerText = "Lendo planilha...";
+        document.getElementById('status').innerText = "Processando arquivo...";
         
         const reader = new FileReader();
         reader.onload = function(event) {
-            const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            
-            // Converte o Excel em JSON
-            const json = XLSX.utils.sheet_to_json(sheet);
-            
-            // Filtra apenas o que é essencial para o seu controle
-            dadosParaEnvio = json.map(item => {
-                return {
-                    cnpj: item['CNPJ'] || item['cnpj'], // Ajusta conforme o nome da coluna no seu Excel
-                    percentual: item['Status'] || item['%'] || 0
-                };
-            });
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet);
+                
+                // Mapeia os dados da planilha da Dellys
+                dadosParaEnvio = json.map(item => {
+                    return {
+                        cnpj: item['CNPJ'] || item['cnpj'] || "N/A",
+                        percentual: item['Status'] || item['%'] || 0
+                    };
+                });
 
-            document.getElementById('msgUpload').innerHTML = `<strong>Arquivo: ${file.name}</strong><br>${dadosParaEnvio.length} unidades identificadas.`;
-            document.getElementById('status').innerText = "Pronto para vincular!";
+                document.getElementById('msgUpload').innerHTML = `<strong>Arquivo: ${file.name}</strong><br>${dadosParaEnvio.length} registros encontrados.`;
+                document.getElementById('status').innerText = "Planilha carregada com sucesso!";
+                document.getElementById('status').style.color = "green";
+            } catch (err) {
+                alert("Erro ao ler o Excel. Verifique o formato.");
+                document.getElementById('status').innerText = "Erro no processamento.";
+            }
         };
         reader.readAsArrayBuffer(file);
     });
 
-    // Função que envia para o Apps Script
     function vincularDados() {
-        if (dadosParaEnvio.length === 0) {
-            alert("Por favor, selecione uma planilha antes de vincular.");
+        const url = document.getElementById('scriptUrl').value.trim();
+        
+        if (!url || !url.includes("macros/s/")) {
+            alert("Por favor, insira um link válido do Google Apps Script.");
             return;
         }
 
-        const url = document.getElementById('scriptLink').innerText.trim();
-        document.getElementById('status').innerText = "Atualizando unidades no motor...";
+        if (dadosParaEnvio.length === 0) {
+            alert("Nenhum dado encontrado. Carregue a planilha primeiro.");
+            return;
+        }
 
-        // Envio para o seu Apps Script
+        document.getElementById('status').innerText = "Enviando dados para o servidor...";
+        document.getElementById('status').style.color = "#1a4a8d";
+
         fetch(url, {
             method: 'POST',
             mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dadosParaEnvio)
+            body: JSON.stringify({
+                data: dadosParaEnvio,
+                timestamp: new Date().toISOString(),
+                responsavel: "Thiago Ferracini"
+            })
         })
         .then(() => {
-            alert("Sucesso! As porcentagens das unidades foram atualizadas.");
-            document.getElementById('status').innerText = "Sincronização concluída.";
+            alert("Dados enviados! Verifique sua planilha do Google Sheets.");
+            document.getElementById('status').innerText = "Sincronização finalizada.";
         })
         .catch(err => {
+            alert("Erro na conexão.");
             console.error(err);
-            alert("Erro ao conectar com o Apps Script.");
         });
     }
 </script>
