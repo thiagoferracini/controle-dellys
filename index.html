@@ -2,58 +2,70 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Controle de Atividades - HOK & OESA</title>
+    <title>Controle de Operações RNF | Ailog</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --primary: #0d2c54; --accent: #1a4a8d; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
-        .header { background-color: var(--primary); color: white; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 20px; }
+        :root { --primary: #0d2c54; --accent: #1a4a8d; --success: #27ae60; --hok: #0d2c54; --oesa: #e67e22; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
         
-        /* Configurações do Motor */
-        .config-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .input-url { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem; }
-        .import-area { border: 2px dashed var(--accent); padding: 15px; text-align: center; background: #f8f9fa; cursor: pointer; border-radius: 8px; margin-bottom: 15px; }
+        /* Header Profissional */
+        .header { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 30px; text-align: center; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* Painel de Controle */
+        .control-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; display: flex; gap: 20px; align-items: center; }
+        .input-url { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; }
+        .btn-import { background: #f8f9fa; border: 2px dashed var(--accent); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--accent); transition: 0.3s; }
+        .btn-import:hover { background: #eef2f7; }
+        .btn-sync { background: var(--success); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
         /* Grid de Cards */
-        .grid-unidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .card-unidade { 
-            background: white; border-left: 6px solid #ccc; padding: 15px; border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; 
-        }
-        .card-unidade:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .card-unidade.hok { border-left-color: #1a4a8d; }
-        .card-unidade.oesa { border-left-color: #e67e22; }
-        .card-unidade h3 { margin: 0 0 5px 0; font-size: 0.95rem; color: var(--primary); }
-        .card-unidade p { margin: 2px 0; font-size: 0.8rem; color: #555; }
-        .perc-tag { font-weight: bold; color: var(--accent); }
-
-        /* Modal */
-        .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 400px; border-radius: 10px; position: relative; }
-        .close { position: absolute; right: 15px; top: 10px; cursor: pointer; font-size: 20px; }
-        textarea { width: 100%; height: 100px; margin: 15px 0; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .grid-unidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; position: relative; cursor: pointer; transition: 0.3s; border-top: 6px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .card.hok { border-top-color: var(--hok); }
+        .card.oesa { border-top-color: var(--oesa); }
         
-        .btn-sync { background: #27ae60; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .card h3 { margin: 0; font-size: 1.1rem; color: var(--primary); }
+        .card .cnpj { font-size: 0.8rem; color: #888; margin: 5px 0; }
+        .card .perc-container { margin-top: 15px; }
+        .progress-bar { background: #eee; border-radius: 10px; height: 10px; width: 100%; margin-top: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--success); transition: 0.5s; }
+
+        /* Modal / Pop-up */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; width: 500px; border-radius: 15px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .close { position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 24px; color: #999; }
+        
+        .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 10px; }
+        .finance-item label { font-size: 0.75rem; color: #666; display: block; }
+        .finance-item span { font-weight: bold; color: var(--primary); }
+
+        .actions-area { margin-top: 20px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-tool { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 0.8rem; background: white; }
+        .btn-tool.active { background: var(--accent); color: white; border-color: var(--accent); }
+        
+        textarea { width: 100%; height: 80px; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; padding: 10px; box-sizing: border-box; resize: none; }
+        #fileInput { display: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>Sistema de Controle de Atividades</h1>
-        <p>Monitoramento HOK & OESA</p>
+        <h1 style="margin:0">Controle de Atividades RNF</h1>
+        <p style="opacity:0.9">Gestão de Unidades HOK & OESA | Ailog</p>
     </div>
 
-    <div class="config-card">
-        <strong>1. Configuração do Motor (Link Apps Script)</strong>
-        <input type="text" id="scriptUrl" class="input-url" placeholder="Insira o link /exec do seu Apps Script" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
-        
-        <div class="import-area" onclick="document.getElementById('fileInput').click()">
-            <p id="msgUpload"><strong>Clique para atualizar porcentagens via Excel</strong><br>O sistema cruzará os dados pelo CNPJ</p>
-            <input type="file" id="fileInput" style="display:none" accept=".xlsx, .xls">
+    <div class="control-panel">
+        <div style="flex:1">
+            <label style="font-size: 0.8rem; font-weight: bold;">Link do Banco de Dados (Google Apps Script):</label>
+            <input type="text" id="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZIxpUkA/exec" class="input-url" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
         </div>
-
-        <button class="btn-sync" onclick="sincronizar()">Sincronizar Atividades com Planilha Mestre</button>
+        <div class="btn-import" onclick="document.getElementById('fileInput').click()">
+            📂 Importar Planilha Diária
+        </div>
+        <input type="file" id="fileInput" accept=".xlsx, .xls">
+        <button class="btn-sync" onclick="sincronizar()">Sincronizar Tudo</button>
     </div>
 
     <div id="containerUnidades" class="grid-unidades">
@@ -62,50 +74,46 @@
     <div id="modalAtividade" class="modal">
         <div class="modal-content">
             <span class="close" onclick="fecharModal()">&times;</span>
-            <h2 id="mNome" style="font-size: 1.1rem; margin-top: 0;"></h2>
-            <p id="mCnpj" style="font-size: 0.8rem; color: #666;"></p>
-            <textarea id="txtObs" placeholder="Registre aqui o que foi tratado com esta unidade..."></textarea>
-            <button class="btn-save" onclick="salvarNota()">Gravar Atividade no Card</button>
+            <h2 id="mNome" style="margin:0; color: var(--primary);"></h2>
+            <p id="mCnpj" class="cnpj"></p>
+            
+            <div class="finance-grid">
+                <div class="finance-item"><label>A Recolher</label><span id="vRecolher">R$ 0,00</span></div>
+                <div class="finance-item"><label>Recolhido</label><span id="vRecolhido">R$ 0,00</span></div>
+                <div class="finance-item"><label>Pausado</label><span id="vPausado">R$ 0,00</span></div>
+                <div class="finance-item"><label>Arquivado</label><span id="vArquivado">R$ 0,00</span></div>
+            </div>
+
+            <div class="actions-area">
+                <strong>Ações Executadas:</strong>
+                <div class="btn-group">
+                    <button class="btn-tool" onclick="toggleBtn(this)">📧 E-mail</button>
+                    <button class="btn-tool" onclick="toggleBtn(this)">💬 WhatsApp</button>
+                    <button class="btn-tool" onclick="toggleBtn(this)">📞 Ligação</button>
+                    <button class="btn-tool" onclick="toggleBtn(this)">👥 Reunião</button>
+                </div>
+                <textarea id="txtAcao" placeholder="Descreva os detalhes da ação executada..."></textarea>
+            </div>
+            <button class="btn-sync" style="width:100%; margin-top:15px;" onclick="salvarNota()">Salvar no Dashboard</button>
         </div>
     </div>
 
 <script>
-    // Unidades fixas conforme sua lista
+    // Unidades base conforme sua lista
     let unidades = [
-        {grupo: 'HOK', filial: 'ITARIRI', cnpj: '20705907/0005-97', perc: '0%', obs: ''},
-        {grupo: 'HOK', filial: 'RIBEIRAO DAS NEVES', cnpj: '20705907/0017-20', perc: '0%', obs: ''},
-        {grupo: 'HOK', filial: 'BIGUAÇU', cnpj: '20705907/0002-44', perc: '0%', obs: ''},
-        {grupo: 'HOK', filial: 'CONTAGEM', cnpj: '20705907/0016-40', perc: '0%', obs: ''},
-        {grupo: 'HOK', filial: 'IVOTI', cnpj: '20705907/0004-06', perc: '0%', obs: ''},
-        {grupo: 'HOK', filial: 'EUNAPOLIS', cnpj: '20705907/0014-88', perc: '0%', obs: ''},
-        {grupo: 'HOK', filial: 'MANAUS', cnpj: '20705907/0020-26', perc: '0%', obs: ''},
-        {grupo: 'OESA', filial: 'JARAGUA DO SUL', cnpj: '81611931/0001-28', perc: '0%', obs: ''},
-        {grupo: 'OESA', filial: 'CASCAVEL', cnpj: '81611931/0052-78', perc: '0%', obs: ''},
-        {grupo: 'OESA', filial: 'BRASILIA', cnpj: '81611931/0022-52', perc: '0%', obs: ''}
-        // Adicione as demais conforme a necessidade
+        {grupo: 'HOK', filial: 'ITARIRI', cnpj: '20705907/0005-97'},
+        {grupo: 'HOK', filial: 'BIGUAÇU', cnpj: '20705907/0002-44'},
+        {grupo: 'HOK', filial: 'CONTAGEM', cnpj: '20705907/0016-40'},
+        {grupo: 'OESA', filial: 'JARAGUA DO SUL', cnpj: '81611931/0001-28'},
+        {grupo: 'OESA', filial: 'BRASILIA', cnpj: '81611931/0022-52'},
+        {grupo: 'OESA', filial: 'CONTAGEM', cnpj: '81611931/0029-29'}
+        // O código processa qualquer unidade presente na planilha que contenha HOK ou OESA
     ];
 
-    let idxSelecionado = null;
+    let dadosFull = [];
+    let idxAtivo = null;
 
-    function renderizar() {
-        const container = document.getElementById('containerUnidades');
-        container.innerHTML = "";
-        unidades.forEach((u, i) => {
-            const card = document.createElement('div');
-            card.className = `card-unidade ${u.grupo.toLowerCase()}`;
-            card.onclick = () => abrirModal(i);
-            card.innerHTML = `
-                <p style="font-size: 0.7rem; font-weight: bold; color: #888;">${u.grupo}</p>
-                <h3>${u.filial}</h3>
-                <p>CNPJ: ${u.cnpj}</p>
-                <p class="perc-tag">Recolha: ${u.perc}</p>
-                ${u.obs ? `<p style="color: #1a4a8d; font-size: 0.75rem; margin-top:8px;">📌 ${u.obs}</p>` : ''}
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    // Lógica para importar o Excel e atualizar as porcentagens
+    // Função para importar planilha e cruzar dados
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
@@ -113,41 +121,89 @@
             const workbook = XLSX.read(data, {type: 'array'});
             const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
             
-            json.forEach(row => {
-                const cnpjPlanilha = row['CNPJ'] || row['cnpj'];
-                const percPlanilha = row['% RECOLHIDO'] || row['Status'];
-                const match = unidades.find(u => u.cnpj.includes(cnpjPlanilha) || cnpjPlanilha.includes(u.cnpj));
-                if(match) match.perc = percPlanilha + (percPlanilha.toString().includes('%') ? '' : '%');
-            });
+            // Filtra e organiza os dados da planilha
+            dadosFull = json.filter(row => {
+                const nome = (row['NOME FANTASIA'] || "").toUpperCase();
+                return nome.includes("HOK") || nome.includes("OESA");
+            }).map(row => ({
+                nome: row['NOME FANTASIA'],
+                cnpj: row['CNPJ'],
+                perc: parseFloat(row['% RECOLHIDO'] || 0),
+                valorRecolher: row['VALOR A RECOLHER'] || 0,
+                valorRecolhido: row['VALOR RECOLHIDO'] || 0,
+                valorPausado: row['VALOR PAUSADO'] || 0,
+                valorArquivado: row['VALOR ARQUIVADO'] || 0,
+                grupo: row['NOME FANTASIA'].includes("HOK") ? "HOK" : "OESA",
+                acoes: [],
+                obs: ""
+            }));
+
             renderizar();
-            document.getElementById('msgUpload').innerText = "✅ Porcentagens atualizadas via Excel!";
         };
         reader.readAsArrayBuffer(e.target.files[0]);
     });
 
+    function renderizar() {
+        const container = document.getElementById('containerUnidades');
+        container.innerHTML = "";
+        dadosFull.forEach((u, i) => {
+            const card = document.createElement('div');
+            card.className = `card ${u.grupo.toLowerCase()}`;
+            card.onclick = () => abrirModal(i);
+            card.innerHTML = `
+                <div style="font-size:0.7rem; font-weight:bold; color:#888">${u.grupo}</div>
+                <h3>${u.nome}</h3>
+                <p class="cnpj">CNPJ: ${u.cnpj}</p>
+                <div class="perc-container">
+                    <span style="font-size:0.9rem; font-weight:bold">${u.perc}% Recolhido</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${u.perc}%"></div></div>
+                </div>
+                ${u.obs ? `<p style="font-size:0.75rem; color:var(--accent); margin-top:10px;">📌 ${u.obs.substring(0,40)}...</p>` : ''}
+            `;
+            container.appendChild(card);
+        });
+    }
+
     function abrirModal(i) {
-        idxSelecionado = i;
-        document.getElementById('mNome').innerText = unidades[i].filial;
-        document.getElementById('mCnpj').innerText = unidades[i].cnpj;
-        document.getElementById('txtObs').value = unidades[i].obs;
+        idxAtivo = i;
+        const u = dadosFull[i];
+        document.getElementById('mNome').innerText = u.nome;
+        document.getElementById('mCnpj').innerText = "CNPJ: " + u.cnpj;
+        document.getElementById('vRecolher').innerText = "R$ " + u.valorRecolher.toLocaleString('pt-BR');
+        document.getElementById('vRecolhido').innerText = "R$ " + u.valorRecolhido.toLocaleString('pt-BR');
+        document.getElementById('vPausado').innerText = "R$ " + u.valorPausado.toLocaleString('pt-BR');
+        document.getElementById('vArquivado').innerText = "R$ " + u.valorArquivado.toLocaleString('pt-BR');
+        document.getElementById('txtAcao').value = u.obs;
+        
+        // Reseta botões
+        document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
         document.getElementById('modalAtividade').style.display = "block";
     }
 
+    function toggleBtn(btn) { btn.classList.toggle('active'); }
     function fecharModal() { document.getElementById('modalAtividade').style.display = "none"; }
 
     function salvarNota() {
-        unidades[idxSelecionado].obs = document.getElementById('txtObs').value;
+        const acoesAtivas = Array.from(document.querySelectorAll('.btn-tool.active')).map(b => b.innerText);
+        dadosFull[idxAtivo].acoes = acoesAtivas;
+        dadosFull[idxAtivo].obs = document.getElementById('txtAcao').value;
         fecharModal();
         renderizar();
     }
 
     function sincronizar() {
         const url = document.getElementById('scriptUrl').value;
-        fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(unidades) })
-        .then(() => alert("Atividades sincronizadas com a Planilha Mestre!"));
+        if(dadosFull.length === 0) return alert("Importe a planilha primeiro.");
+        
+        fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({
+                data_importacao: new Date().toLocaleDateString(),
+                unidades: dadosFull
+            })
+        }).then(() => alert("Sincronizado com o Google Sheets!"));
     }
-
-    renderizar();
 </script>
 </body>
 </html>
