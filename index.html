@@ -2,141 +2,152 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Recolha Dellys</title>
+    <title>Controle de Atividades - HOK & OESA</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .header-blue { background-color: #0d2c54; color: white; padding: 40px; text-align: center; border-radius: 10px; margin-bottom: 20px; }
-        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .section-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; display: block; }
+        :root { --primary: #0d2c54; --accent: #1a4a8d; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
+        .header { background-color: var(--primary); color: white; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 20px; }
         
-        /* Onde você coloca o Link do Apps Script */
-        .url-input-container { margin-bottom: 20px; }
-        .label-url { font-size: 0.85rem; color: #666; margin-bottom: 5px; display: block; }
-        .input-url { 
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
-            background: #fdfdfd; 
-            font-family: monospace; 
-            font-size: 0.8rem;
-            box-sizing: border-box;
+        /* Configurações do Motor */
+        .config-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .input-url { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem; }
+        .import-area { border: 2px dashed var(--accent); padding: 15px; text-align: center; background: #f8f9fa; cursor: pointer; border-radius: 8px; margin-bottom: 15px; }
+
+        /* Grid de Cards */
+        .grid-unidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .card-unidade { 
+            background: white; border-left: 6px solid #ccc; padding: 15px; border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; 
         }
+        .card-unidade:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card-unidade.hok { border-left-color: #1a4a8d; }
+        .card-unidade.oesa { border-left-color: #e67e22; }
+        .card-unidade h3 { margin: 0 0 5px 0; font-size: 0.95rem; color: var(--primary); }
+        .card-unidade p { margin: 2px 0; font-size: 0.8rem; color: #555; }
+        .perc-tag { font-weight: bold; color: var(--accent); }
 
-        /* Área de Importação do Excel */
-        .import-box { border: 2px dashed #1a4a8d; border-radius: 8px; padding: 25px; text-align: center; background: #f8f9fa; cursor: pointer; transition: 0.2s; }
-        .import-box:hover { background: #eef2f7; border-color: #0d2c54; }
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 400px; border-radius: 10px; position: relative; }
+        .close { position: absolute; right: 15px; top: 10px; cursor: pointer; font-size: 20px; }
+        textarea { width: 100%; height: 100px; margin: 15px 0; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
         
-        .btn-action { background-color: #0d2c54; color: white; width: 100%; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 20px; }
-        .btn-action:hover { background-color: #1a4a8d; }
-
-        #status { font-size: 0.9rem; margin-top: 15px; color: #1a4a8d; font-weight: bold; text-align: center; }
-        #fileInput { display: none; }
+        .btn-sync { background: #27ae60; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
     </style>
 </head>
 <body>
 
-    <div class="header-blue">
-        <h1 style="margin:0;">Dashboard de Recolha Dellys</h1>
-        <p style="margin: 10px 0 0 0;">Monitoramento de Unidades e Histórico de Atividades</p>
+    <div class="header">
+        <h1>Sistema de Controle de Atividades</h1>
+        <p>Monitoramento HOK & OESA</p>
     </div>
 
-    <div class="card">
-        <span class="section-title">1. Importar Dados do Relatório Mestre</span>
+    <div class="config-card">
+        <strong>1. Configuração do Motor (Link Apps Script)</strong>
+        <input type="text" id="scriptUrl" class="input-url" placeholder="Insira o link /exec do seu Apps Script" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
         
-        <div class="url-input-container">
-            <label class="label-url">Link do Motor (Google Apps Script URL):</label>
-            <input type="text" id="scriptUrl" class="input-url" placeholder="Cole aqui o link finalizado em /exec" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
+        <div class="import-area" onclick="document.getElementById('fileInput').click()">
+            <p id="msgUpload"><strong>Clique para atualizar porcentagens via Excel</strong><br>O sistema cruzará os dados pelo CNPJ</p>
+            <input type="file" id="fileInput" style="display:none" accept=".xlsx, .xls">
         </div>
 
-        <div class="import-box" onclick="document.getElementById('fileInput').click()">
-            <p id="msgUpload"><strong>Clique para selecionar a planilha</strong><br>Formato aceito: .xlsx ou .xls</p>
-            <input type="file" id="fileInput" accept=".xlsx, .xls">
-        </div>
-        
-        <div id="status">Aguardando planilha...</div>
-
-        <button class="btn-action" onclick="vincularDados()">Vincular Dados às Unidades</button>
+        <button class="btn-sync" onclick="sincronizar()">Sincronizar Atividades com Planilha Mestre</button>
     </div>
 
-    <div class="card">
-        <span class="section-title">2. Gestão de Unidades</span>
-        <p style="color: #666; font-size: 0.9rem;">As porcentagens serão processadas e enviadas para o motor assim que clicar no botão acima.</p>
+    <div id="containerUnidades" class="grid-unidades">
+        </div>
+
+    <div id="modalAtividade" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal()">&times;</span>
+            <h2 id="mNome" style="font-size: 1.1rem; margin-top: 0;"></h2>
+            <p id="mCnpj" style="font-size: 0.8rem; color: #666;"></p>
+            <textarea id="txtObs" placeholder="Registre aqui o que foi tratado com esta unidade..."></textarea>
+            <button class="btn-save" onclick="salvarNota()">Gravar Atividade no Card</button>
+        </div>
     </div>
 
 <script>
-    let dadosParaEnvio = [];
+    // Unidades fixas conforme sua lista
+    let unidades = [
+        {grupo: 'HOK', filial: 'ITARIRI', cnpj: '20705907/0005-97', perc: '0%', obs: ''},
+        {grupo: 'HOK', filial: 'RIBEIRAO DAS NEVES', cnpj: '20705907/0017-20', perc: '0%', obs: ''},
+        {grupo: 'HOK', filial: 'BIGUAÇU', cnpj: '20705907/0002-44', perc: '0%', obs: ''},
+        {grupo: 'HOK', filial: 'CONTAGEM', cnpj: '20705907/0016-40', perc: '0%', obs: ''},
+        {grupo: 'HOK', filial: 'IVOTI', cnpj: '20705907/0004-06', perc: '0%', obs: ''},
+        {grupo: 'HOK', filial: 'EUNAPOLIS', cnpj: '20705907/0014-88', perc: '0%', obs: ''},
+        {grupo: 'HOK', filial: 'MANAUS', cnpj: '20705907/0020-26', perc: '0%', obs: ''},
+        {grupo: 'OESA', filial: 'JARAGUA DO SUL', cnpj: '81611931/0001-28', perc: '0%', obs: ''},
+        {grupo: 'OESA', filial: 'CASCAVEL', cnpj: '81611931/0052-78', perc: '0%', obs: ''},
+        {grupo: 'OESA', filial: 'BRASILIA', cnpj: '81611931/0022-52', perc: '0%', obs: ''}
+        // Adicione as demais conforme a necessidade
+    ];
 
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    let idxSelecionado = null;
 
-        document.getElementById('status').innerText = "Processando arquivo...";
-        
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet);
-                
-                // Mapeia os dados da planilha da Dellys
-                dadosParaEnvio = json.map(item => {
-                    return {
-                        cnpj: item['CNPJ'] || item['cnpj'] || "N/A",
-                        percentual: item['Status'] || item['%'] || 0
-                    };
-                });
-
-                document.getElementById('msgUpload').innerHTML = `<strong>Arquivo: ${file.name}</strong><br>${dadosParaEnvio.length} registros encontrados.`;
-                document.getElementById('status').innerText = "Planilha carregada com sucesso!";
-                document.getElementById('status').style.color = "green";
-            } catch (err) {
-                alert("Erro ao ler o Excel. Verifique o formato.");
-                document.getElementById('status').innerText = "Erro no processamento.";
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    });
-
-    function vincularDados() {
-        const url = document.getElementById('scriptUrl').value.trim();
-        
-        if (!url || !url.includes("macros/s/")) {
-            alert("Por favor, insira um link válido do Google Apps Script.");
-            return;
-        }
-
-        if (dadosParaEnvio.length === 0) {
-            alert("Nenhum dado encontrado. Carregue a planilha primeiro.");
-            return;
-        }
-
-        document.getElementById('status').innerText = "Enviando dados para o servidor...";
-        document.getElementById('status').style.color = "#1a4a8d";
-
-        fetch(url, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({
-                data: dadosParaEnvio,
-                timestamp: new Date().toISOString(),
-                responsavel: "Thiago Ferracini"
-            })
-        })
-        .then(() => {
-            alert("Dados enviados! Verifique sua planilha do Google Sheets.");
-            document.getElementById('status').innerText = "Sincronização finalizada.";
-        })
-        .catch(err => {
-            alert("Erro na conexão.");
-            console.error(err);
+    function renderizar() {
+        const container = document.getElementById('containerUnidades');
+        container.innerHTML = "";
+        unidades.forEach((u, i) => {
+            const card = document.createElement('div');
+            card.className = `card-unidade ${u.grupo.toLowerCase()}`;
+            card.onclick = () => abrirModal(i);
+            card.innerHTML = `
+                <p style="font-size: 0.7rem; font-weight: bold; color: #888;">${u.grupo}</p>
+                <h3>${u.filial}</h3>
+                <p>CNPJ: ${u.cnpj}</p>
+                <p class="perc-tag">Recolha: ${u.perc}</p>
+                ${u.obs ? `<p style="color: #1a4a8d; font-size: 0.75rem; margin-top:8px;">📌 ${u.obs}</p>` : ''}
+            `;
+            container.appendChild(card);
         });
     }
-</script>
 
+    // Lógica para importar o Excel e atualizar as porcentagens
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            
+            json.forEach(row => {
+                const cnpjPlanilha = row['CNPJ'] || row['cnpj'];
+                const percPlanilha = row['% RECOLHIDO'] || row['Status'];
+                const match = unidades.find(u => u.cnpj.includes(cnpjPlanilha) || cnpjPlanilha.includes(u.cnpj));
+                if(match) match.perc = percPlanilha + (percPlanilha.toString().includes('%') ? '' : '%');
+            });
+            renderizar();
+            document.getElementById('msgUpload').innerText = "✅ Porcentagens atualizadas via Excel!";
+        };
+        reader.readAsArrayBuffer(e.target.files[0]);
+    });
+
+    function abrirModal(i) {
+        idxSelecionado = i;
+        document.getElementById('mNome').innerText = unidades[i].filial;
+        document.getElementById('mCnpj').innerText = unidades[i].cnpj;
+        document.getElementById('txtObs').value = unidades[i].obs;
+        document.getElementById('modalAtividade').style.display = "block";
+    }
+
+    function fecharModal() { document.getElementById('modalAtividade').style.display = "none"; }
+
+    function salvarNota() {
+        unidades[idxSelecionado].obs = document.getElementById('txtObs').value;
+        fecharModal();
+        renderizar();
+    }
+
+    function sincronizar() {
+        const url = document.getElementById('scriptUrl').value;
+        fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(unidades) })
+        .then(() => alert("Atividades sincronizadas com a Planilha Mestre!"));
+    }
+
+    renderizar();
+</script>
 </body>
 </html>
