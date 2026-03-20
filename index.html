@@ -6,102 +6,58 @@
     <title>Dashboard RNF Profissional | Ailog</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { 
-            --primary: #0d2c54; --accent: #1a4a8d; --success: #27ae60; 
-            --warning: #f39c12; --danger: #e74c3c; --hok: #0d2c54; 
-            --oesa: #e67e22; --bg: #f4f7f6; 
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
-        
-        /* Header */
-        .header { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 25px; text-align: center; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* Painel de Controle */
+        :root { --primary: #0d2c54; --accent: #1a4a8d; --success: #27ae60; --hok: #0d2c54; --oesa: #e67e22; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
+        .header { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 20px; text-align: center; border-radius: 15px; margin-bottom: 25px; }
         .control-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
-        .input-group { flex: 1; min-width: 250px; }
-        .input-url { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.8rem; font-family: monospace; }
-        
-        .btn { padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
-        .btn-import { background: #f8f9fa; border: 2px dashed var(--accent); color: var(--accent); }
+        .input-url { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.8rem; min-width: 300px; }
+        .btn { padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-restore { background: var(--accent); color: white; }
         .btn-sync { background: var(--success); color: white; }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
-
-        /* Grid de Cards */
         .grid-unidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; padding: 20px; cursor: pointer; transition: 0.3s; border-top: 8px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .card { background: white; border-radius: 12px; padding: 20px; cursor: pointer; border-top: 8px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; }
         .card.hok { border-top-color: var(--hok); }
         .card.oesa { border-top-color: var(--oesa); }
-        .card h3 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; }
-        .card .cnpj { font-size: 0.75rem; color: #888; margin: 5px 0; }
-        
-        /* Progresso */
-        .perc-container { margin-top: 15px; }
         .progress-bar { background: #eee; border-radius: 10px; height: 10px; width: 100%; margin-top: 5px; overflow: hidden; }
         .progress-fill { height: 100%; transition: 0.5s; }
-        .badge-obs { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; }
-
-        /* Modal */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; width: 450px; border-radius: 15px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .close { position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 24px; color: #999; }
-        .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 10px; }
-        .finance-item label { font-size: 0.7rem; color: #666; display: block; }
-        .finance-item span { font-weight: bold; color: var(--primary); }
-        
-        .btn-tool { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; background: white; margin-right: 5px; margin-top: 5px; font-size: 0.8rem; }
-        .btn-tool.active { background: var(--accent); color: white; border-color: var(--accent); }
-        textarea { width: 100%; height: 100px; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; padding: 10px; box-sizing: border-box; resize: none; font-family: inherit; }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; width: 450px; border-radius: 15px; position: relative; }
+        .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; background: #f8f9fa; padding: 15px; border-radius: 10px; }
+        .btn-tool { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; background: white; margin-right: 5px; margin-top: 5px; }
+        .btn-tool.active { background: var(--accent); color: white; }
+        textarea { width: 100%; height: 100px; margin-top: 15px; padding: 10px; box-sizing: border-box; border-radius: 8px; border: 1px solid #ddd; }
+        .pin { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Controle Operacional RNF | Ailog</h1>
-        <p style="margin:5px 0 0 0; opacity: 0.8;">Gestão Profissional HOK & OESA</p>
-    </div>
+    <div class="header"><h1>Controle RNF | HOK & OESA</h1></div>
 
     <div class="control-panel">
-        <div class="input-group">
-            <label style="font-size: 11px; font-weight: bold; color: var(--primary);">LINK DO MOTOR (GOOGLE APPS SCRIPT):</label>
-            <input type="text" id="scriptUrlField" class="input-url" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZIxpUkA/exec">
-        </div>
-        
-        <button class="btn btn-import" onclick="document.getElementById('fileInput').click()">📂 Importar Excel</button>
+        <input type="text" id="scriptUrlField" class="input-url" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
+        <button class="btn btn" style="border:1px solid #ccc" onclick="document.getElementById('fileInput').click()">📂 Importar</button>
         <button class="btn btn-restore" onclick="recuperarDados()">🔄 Recuperar Sessão</button>
-        <button class="btn btn-sync" onclick="sincronizar()">✅ Sincronizar Agora</button>
-        
+        <button class="btn btn-sync" onclick="sincronizar()">✅ Sincronizar</button>
         <input type="file" id="fileInput" style="display:none" accept=".xlsx, .xls">
     </div>
 
-    <div id="containerUnidades" class="grid-unidades">
-        <p style="text-align: center; grid-column: 1/-1; color: #888;">Aguardando importação ou recuperação de dados...</p>
-    </div>
+    <div id="containerUnidades" class="grid-unidades"></div>
 
     <div id="modalAtividade" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="fecharModal()">&times;</span>
-            <h2 id="mNome" style="margin:0; color: var(--primary);"></h2>
-            <p id="mCnpj" class="cnpj"></p>
-            
-            <div class="finance-grid">
-                <div class="finance-item"><label>A Recolher</label><span id="vRecolher">R$ 0,00</span></div>
-                <div class="finance-item"><label>Recolhido</label><span id="vRecolhido">R$ 0,00</span></div>
-                <div class="finance-item"><label>Pausado</label><span id="vPausado">R$ 0,00</span></div>
-                <div class="finance-item"><label>Arquivado</label><span id="vArquivado">R$ 0,00</span></div>
-            </div>
-
+            <span style="position:absolute; right:20px; cursor:pointer;" onclick="fecharModal()">❌</span>
+            <h2 id="mNome" style="margin:0"></h2>
+            <p id="mCnpj" style="color:#888; font-size:0.8rem"></p>
+            <div class="finance-grid" id="mFinance"></div>
             <strong>Ações Realizadas:</strong>
             <div id="btnGroup">
-                <button class="btn-tool" onclick="toggleBtn(this)">📧 E-mail</button>
-                <button class="btn-tool" onclick="toggleBtn(this)">💬 WhatsApp</button>
-                <button class="btn-tool" onclick="toggleBtn(this)">📞 Ligação</button>
-                <button class="btn-tool" onclick="toggleBtn(this)">👥 Reunião</button>
+                <button class="btn-tool" onclick="this.classList.toggle('active')">📧 E-mail</button>
+                <button class="btn-tool" onclick="this.classList.toggle('active')">💬 WhatsApp</button>
+                <button class="btn-tool" onclick="this.classList.toggle('active')">📞 Ligação</button>
+                <button class="btn-tool" onclick="this.classList.toggle('active')">👥 Reunião</button>
             </div>
-            
-            <textarea id="txtAcao" placeholder="Descreva as ações ou observações aqui..."></textarea>
-            <button class="btn btn-sync" style="width:100%; margin-top:20px; justify-content: center;" onclick="salvarNotaLocal()">Salvar Alteração Local</button>
+            <textarea id="txtAcao" placeholder="Descreva as ações aqui..."></textarea>
+            <button class="btn btn-sync" style="width:100%; margin-top:15px;" onclick="salvarNotaLocal()">Salvar Alteração Local</button>
         </div>
     </div>
 
@@ -109,16 +65,12 @@
     let dadosFull = [];
     let idxAtivo = null;
 
-    // 1. IMPORTAÇÃO DE PLANILHA
     document.getElementById('fileInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
         const reader = new FileReader();
         reader.onload = function(event) {
             const data = new Uint8Array(event.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
             const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            
             dadosFull = json.filter(row => {
                 const n = (row['NOME FANTASIA'] || "").toUpperCase();
                 return n.includes("HOK") || n.includes("OESA");
@@ -132,106 +84,71 @@
             }));
             renderizar();
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(e.target.files[0]);
     });
 
-    // 2. RENDERIZAR CARDS
     function renderizar() {
         const container = document.getElementById('containerUnidades');
         container.innerHTML = "";
-        if (dadosFull.length === 0) {
-            container.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: #888;">Nenhuma unidade encontrada.</p>';
-            return;
-        }
-
         dadosFull.forEach((u, i) => {
             const card = document.createElement('div');
             card.className = `card ${u.grupo.toLowerCase()}`;
             card.onclick = () => abrirModal(i);
-            
-            const corBarra = u.perc >= 92 ? '#27ae60' : (u.perc > 0 ? '#f39c12' : '#e74c3c');
-
+            const cor = u.perc >= 92 ? '#27ae60' : '#f39c12';
             card.innerHTML = `
-                <div style="font-size:10px; font-weight:bold; color:#888;">${u.grupo}</div>
-                <h3>${u.nome}</h3>
-                <p class="cnpj">${u.cnpj}</p>
-                <div class="perc-container">
-                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
-                        <span>Recolha</span><span>${u.perc.toFixed(2)}%</span>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${u.perc}%; background:${corBarra}"></div></div>
-                </div>
-                ${u.obs ? '<span class="badge-obs">📌</span>' : ''}
+                <small>${u.grupo}</small><h3>${u.nome}</h3>
+                <div class="progress-bar"><div class="progress-fill" style="width:${u.perc}%; background:${cor}"></div></div>
+                <div style="font-size:12px; margin-top:5px">${u.perc.toFixed(2)}% ${u.obs ? '📌' : ''}</div>
             `;
             container.appendChild(card);
         });
     }
 
-    // 3. LÓGICA DO MODAL
     function abrirModal(i) {
         idxAtivo = i; const u = dadosFull[i];
         document.getElementById('mNome').innerText = u.nome;
         document.getElementById('mCnpj').innerText = "CNPJ: " + u.cnpj;
-        document.getElementById('vRecolher').innerText = "R$ " + u.vRecolher.toLocaleString('pt-BR');
-        document.getElementById('vRecolhido').innerText = "R$ " + u.vRecolhido.toLocaleString('pt-BR');
-        document.getElementById('vPausado').innerText = "R$ " + u.vPausado.toLocaleString('pt-BR');
-        document.getElementById('vArquivado').innerText = "R$ " + u.vArquivado.toLocaleString('pt-BR');
-        document.getElementById('txtAcao').value = u.obs;
+        document.getElementById('mFinance').innerHTML = `<div>A Recolher:<br>R$ ${u.vRecolher}</div><div>Recolhido:<br>R$ ${u.vRecolhido}</div>`;
+        document.getElementById('txtAcao').value = u.obs || "";
         
-        // Reset botões
-        document.querySelectorAll('.btn-tool').forEach(b => {
-            b.classList.remove('active');
-            if (u.acoes.includes(b.innerText)) b.classList.add('active');
+        // CORREÇÃO: Reativa os botões baseados no que veio da planilha
+        document.querySelectorAll('.btn-tool').forEach(btn => {
+            btn.classList.remove('active');
+            if (u.acoes && u.acoes.includes(btn.innerText)) btn.classList.add('active');
         });
         document.getElementById('modalAtividade').style.display = "block";
     }
 
-    function toggleBtn(b) { b.classList.toggle('active'); }
     function fecharModal() { document.getElementById('modalAtividade').style.display = "none"; }
 
     function salvarNotaLocal() {
         dadosFull[idxAtivo].obs = document.getElementById('txtAcao').value;
         dadosFull[idxAtivo].acoes = Array.from(document.querySelectorAll('.btn-tool.active')).map(b => b.innerText);
-        fecharModal();
-        renderizar();
+        fecharModal(); renderizar();
     }
 
-    // 4. RECUPERAR (BUSCA TODAS AS UNIDADES DA ÚLTIMA DATA)
     function recuperarDados() {
-        const url = document.getElementById('scriptUrlField').value.trim();
-        if (!url) return alert("URL do motor não definida.");
-
-        alert("Conectando ao Google Sheets para recuperar a última sessão...");
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    dadosFull = data;
-                    renderizar();
-                    alert("✅ Recuperadas " + data.length + " unidades da última sincronização oficial.");
-                } else {
-                    alert("⚠️ Nenhuma informação encontrada na planilha.");
-                }
-            })
-            .catch(err => alert("Erro ao recuperar: " + err));
+        const url = document.getElementById('scriptUrlField').value;
+        fetch(url).then(res => res.json()).then(data => {
+            if (data && data.length > 0) {
+                // Mapeia garantindo que as ações e observações sejam preenchidas
+                dadosFull = data.map(item => ({
+                    ...item,
+                    acoes: item.acoes || [],
+                    obs: item.obs || ""
+                }));
+                renderizar();
+                alert("✅ Dados recuperados! Agora você pode ver as anotações nos popups.");
+            }
+        }).catch(err => alert("Erro ao recuperar dados: " + err));
     }
 
-    // 5. SINCRONIZAR (ENVIO COM UPSERT)
     function sincronizar() {
-        const url = document.getElementById('scriptUrlField').value.trim();
-        if (dadosFull.length === 0) return alert("Importe ou recupere dados primeiro.");
-
+        const url = document.getElementById('scriptUrlField').value;
         fetch(url, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({
-                data_importacao: new Date().toLocaleDateString('pt-BR'),
-                unidades: dadosFull
-            })
-        }).then(() => {
-            alert("✅ Sincronização enviada! O sistema atualizou as informações do dia na planilha.");
-        }).catch(err => alert("Erro na sincronização: " + err));
+            method: 'POST', mode: 'no-cors',
+            body: JSON.stringify({ data_importacao: new Date().toLocaleDateString('pt-BR'), unidades: dadosFull })
+        }).then(() => alert("✅ Sincronizado!"));
     }
 </script>
 </body>
