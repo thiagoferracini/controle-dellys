@@ -9,36 +9,23 @@
         :root { --primary: #0d2c54; --accent: #1a4a8d; --success: #27ae60; --hok: #0d2c54; --oesa: #e67e22; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
         .header { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 20px; text-align: center; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        /* Painel de Controle Limpo */
         .control-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-        
         .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
         .btn-import { background: #f8f9fa; border: 1px solid #ddd; color: var(--primary); }
         .btn-restore { background: var(--accent); color: white; }
         .btn-sync { background: var(--success); color: white; }
-        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
-
-        /* Grid de Unidades */
         .grid-unidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; padding: 20px; cursor: pointer; border-top: 8px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; transition: 0.3s; }
+        .card { background: white; border-radius: 12px; padding: 20px; cursor: pointer; border-top: 8px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; }
         .card.hok { border-top-color: var(--hok); }
         .card.oesa { border-top-color: var(--oesa); }
-        
         .progress-bar { background: #eee; border-radius: 10px; height: 10px; width: 100%; margin-top: 5px; overflow: hidden; }
         .progress-fill { height: 100%; transition: 0.5s; }
-
-        /* Modal / Popup */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
         .modal-content { background: white; margin: 2% auto; padding: 30px; width: 500px; border-radius: 20px; position: relative; max-height: 90vh; overflow-y: auto; }
         .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; background: #f8f9fa; padding: 15px; border-radius: 10px; }
-        
         .btn-tool { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; background: white; margin-right: 5px; margin-top: 8px; }
-        .btn-tool.active { background: var(--accent); color: white; border-color: var(--accent); }
-        
-        textarea { width: 100%; height: 100px; margin-top: 15px; padding: 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #ddd; resize: none; font-family: inherit; }
-        
-        .historico-container { margin-top: 25px; border-top: 2px solid #f0f0f0; padding-top: 15px; }
+        .btn-tool.active { background: var(--accent); color: white; }
+        textarea { width: 100%; height: 100px; margin-top: 15px; padding: 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #ddd; resize: none; }
         .historico-item { background: #fdfdfd; border-left: 4px solid var(--success); padding: 10px; margin-bottom: 10px; border-radius: 0 8px 8px 0; font-size: 0.85rem; }
     </style>
 </head>
@@ -46,14 +33,13 @@
 
     <div class="header">
         <h1>Controle Operacional RNF | Ailog</h1>
-        <p style="margin:5px 0 0 0; opacity: 0.8;">HOK & OESA - Gestão de Qualidade</p>
     </div>
 
-    <input type="hidden" id="scriptUrlField" value="https://script.google.com/macros/s/AKfycbxP_y5Fkti6bcKRE8WqHNTiRDvzC2QNu_oaRnuViEOdYbwm3SieBPe26rH1dkYLv_OhbQ/exec">
+    <input type="hidden" id="scriptUrlField" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
 
     <div class="control-panel">
         <button class="btn btn-import" onclick="document.getElementById('fileInput').click()">📂 Importar Planilha</button>
-        <button class="btn btn-restore" onclick="recuperarDados()">🔄 Recuperar Histórico</button>
+        <button class="btn btn-restore" id="btnRestore" onclick="recuperarDados()">🔄 Recuperar Histórico</button>
         <button class="btn btn-sync" onclick="sincronizar()">✅ Sincronizar Tudo</button>
         <input type="file" id="fileInput" style="display:none" accept=".xlsx, .xls">
     </div>
@@ -65,9 +51,7 @@
             <span style="position:absolute; right:20px; cursor:pointer; font-weight:bold; color:red;" onclick="fecharModal()">FECHAR</span>
             <h2 id="mNome" style="margin:0; color: var(--primary);"></h2>
             <p id="mCnpj" style="color:#888; font-size:0.8rem;"></p>
-            
             <div class="finance-grid" id="mFinance"></div>
-
             <strong>Ações Realizadas:</strong>
             <div id="btnGroup">
                 <button class="btn-tool" onclick="this.classList.toggle('active')">📧 E-mail</button>
@@ -75,14 +59,11 @@
                 <button class="btn-tool" onclick="this.classList.toggle('active')">📞 Ligação</button>
                 <button class="btn-tool" onclick="this.classList.toggle('active')">👥 Reunião</button>
             </div>
-            
-            <textarea id="txtAcao" placeholder="Descreva aqui o resumo do contato..."></textarea>
-            
+            <textarea id="txtAcao" placeholder="Descreva o resumo do contato..."></textarea>
             <button class="btn btn-sync" style="width:100%; margin-top:15px; justify-content: center;" onclick="salvarNotaLocal()">Salvar Alteração Local</button>
-
-            <div class="historico-container">
-                <strong style="color: var(--accent); font-size: 0.9rem;">📜 Linha do Tempo:</strong>
-                <div id="listaHistorico" style="margin-top:10px;"></div>
+            <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+                <strong>📜 Histórico:</strong>
+                <div id="listaHistorico"></div>
             </div>
         </div>
     </div>
@@ -92,7 +73,6 @@
     let idxAtivo = null;
     const URL_MOTOR = document.getElementById('scriptUrlField').value;
 
-    // IMPORTAÇÃO
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
@@ -122,7 +102,7 @@
             card.className = `card ${u.grupo.toLowerCase()}`;
             card.onclick = () => abrirModal(i);
             const cor = u.perc >= 92 ? '#27ae60' : '#f39c12';
-            card.innerHTML = `<h3>${u.nome}</h3><div class="progress-bar"><div class="progress-fill" style="width:${u.perc}%; background:${cor}"></div></div><div style="font-size:12px; margin-top:8px; font-weight:bold">${u.perc.toFixed(2)}% ${u.obs ? '📌' : ''}</div>`;
+            card.innerHTML = `<h3>${u.nome}</h3><div class="progress-bar"><div class="progress-fill" style="width:${u.perc}%; background:${cor}"></div></div><div style="font-size:12px; margin-top:8px">${u.perc.toFixed(2)}% ${u.obs ? '📌' : ''}</div>`;
             container.appendChild(card);
         });
     }
@@ -131,14 +111,12 @@
         idxAtivo = i; const u = dadosFull[i];
         document.getElementById('mNome').innerText = u.nome;
         document.getElementById('mCnpj').innerText = "CNPJ: " + u.cnpj;
-        document.getElementById('mFinance').innerHTML = `<div>A Recolher:<br>R$ ${u.vRecolher.toLocaleString('pt-BR')}</div><div>Recolhido:<br>R$ ${u.vRecolhido.toLocaleString('pt-BR')}</div>`;
+        document.getElementById('mFinance').innerHTML = `<div>A Recolher:<br>R$ ${u.vRecolher}</div><div>Recolhido:<br>R$ ${u.vRecolhido}</div>`;
         document.getElementById('txtAcao').value = u.obs || "";
-        
         document.querySelectorAll('.btn-tool').forEach(btn => {
             btn.classList.remove('active');
             if (u.acoes && u.acoes.includes(btn.innerText)) btn.classList.add('active');
         });
-
         const listaH = document.getElementById('listaHistorico');
         listaH.innerHTML = "";
         if (u.historico && u.historico.length > 0) {
@@ -157,31 +135,37 @@
         fecharModal(); renderizar();
     }
 
-    // RECUPERAR
+    // RECUPERAR COM CORREÇÃO DE FETCH
     async function recuperarDados() {
+        const btn = document.getElementById('btnRestore');
+        btn.innerText = "⏳ Carregando...";
         try {
-            const response = await fetch(URL_MOTOR);
+            const response = await fetch(URL_MOTOR, {
+                method: 'GET',
+                cache: 'no-cache',
+                redirect: 'follow'
+            });
             const data = await response.json();
-            if(data && data.length > 0) {
+            if(data) {
                 dadosFull = data;
                 renderizar();
-                alert("✅ Sucesso: Histórico operacional carregado!");
+                alert("✅ Histórico carregado!");
             }
-        } catch (err) { alert("Erro ao recuperar: Verifique a conexão."); }
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao recuperar. Certifique-se de que a implantação no Google está como 'Qualquer Pessoa'.");
+        } finally {
+            btn.innerText = "🔄 Recuperar Histórico";
+        }
     }
 
-    // SINCRONIZAR
     function sincronizar() {
         if (dadosFull.length === 0) return alert("Importe a planilha primeiro!");
-
         fetch(URL_MOTOR, {
             method: 'POST',
             mode: 'no-cors',
-            body: JSON.stringify({
-                data_importacao: new Date().toLocaleDateString('pt-BR'),
-                unidades: dadosFull
-            })
-        }).then(() => alert("✅ Sincronizado com o Google Sheets!"));
+            body: JSON.stringify({ data_importacao: new Date().toLocaleDateString('pt-BR'), unidades: dadosFull })
+        }).then(() => alert("✅ Sincronizado!"));
     }
 </script>
 </body>
