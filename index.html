@@ -6,243 +6,110 @@
     <title>Dashboard de Recolha Dellys</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root {
-            --primary-color: #0d2c54;
-            --secondary-color: #f8f9fa;
-            --accent-color: #1a4a8d;
-            --text-color: #333;
-        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .header-blue { background-color: #0d2c54; color: white; padding: 40px; text-align: center; border-radius: 10px; margin-bottom: 20px; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .section-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; display: block; }
+        .script-url-display { font-size: 0.85rem; color: #666; margin-bottom: 10px; word-break: break-all; }
+        
+        /* Área de Importação */
+        .import-box { border: 2px dashed #1a4a8d; border-radius: 8px; padding: 20px; text-align: center; background: #f8f9fa; cursor: pointer; }
+        .import-box:hover { background: #eef2f7; }
+        
+        /* O Botão de Ação que você já tinha */
+        .btn-action { background-color: #0d2c54; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 15px; }
+        .btn-action:hover { background-color: #1a4a8d; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e9ecef;
-            margin: 0;
-            padding: 20px;
-            color: var(--text-color);
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 2.2rem;
-            letter-spacing: 1px;
-        }
-
-        .header p {
-            margin-top: 10px;
-            opacity: 0.8;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .section-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            border-left: 5px solid var(--primary-color);
-            padding-left: 15px;
-        }
-
-        .upload-area {
-            border: 2px dashed #ccc;
-            padding: 40px;
-            text-align: center;
-            border-radius: 8px;
-            background-color: var(--secondary-color);
-            transition: 0.3s;
-            cursor: pointer;
-        }
-
-        .upload-area:hover {
-            border-color: var(--accent-color);
-            background-color: #f0f4f8;
-        }
-
-        #excelInput {
-            display: none;
-        }
-
-        .btn-upload {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
-            transition: background 0.3s;
-        }
-
-        .btn-upload:hover {
-            background-color: var(--accent-color);
-        }
-
-        #status {
-            margin-top: 15px;
-            font-weight: 500;
-        }
-
-        .data-preview {
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 0.85rem;
-            background: #f1f1f1;
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            border-bottom: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
+        #status { font-size: 0.9rem; margin-top: 10px; color: #1a4a8d; font-weight: 500; }
+        #fileInput { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>Dashboard de Recolha Dellys</h1>
-        <p>Monitoramento de Unidades e Histórico de Atividades</p>
+    <div class="header-blue">
+        <h1 style="margin:0;">Dashboard de Recolha Dellys</h1>
+        <p style="margin: 10px 0 0 0;">Monitoramento de Unidades e Histórico de Atividades</p>
     </div>
 
-    <div class="content">
-        <div class="section-title">1. Importar Dados da Planilha (Excel/XLSX)</div>
+    <div class="card">
+        <span class="section-title">1. Importar Dados do Relatório Mestre</span>
         
-        <div class="upload-area" onclick="document.getElementById('excelInput').click()">
-            <p>Clique aqui para selecionar a planilha de abastecimento</p>
-            <button class="btn-upload">Selecionar Arquivo</button>
-            <input type="file" id="excelInput" accept=".xlsx, .xls, .csv">
-            <div id="status">Aguardando arquivo...</div>
+        <div class="script-url-display" id="scriptLink">
+            https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec
         </div>
 
-        <div id="previewContainer" class="data-preview">
-            <strong>Prévia dos Dados:</strong>
-            <table id="dataTable">
-                <thead>
-                    <tr id="tableHeader"></tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+        <div class="import-box" onclick="document.getElementById('fileInput').click()">
+            <p id="msgUpload">Clique aqui para carregar a planilha <strong>AbastecimentoClientes.xlsx</strong></p>
+            <input type="file" id="fileInput" accept=".xlsx, .xls">
         </div>
+        
+        <div id="status">Aguardando arquivo...</div>
 
-        <div style="margin-top: 30px; text-align: center;">
-            <button id="btnVincular" class="btn-upload" style="width: 100%; display: none;" onclick="vincularAoScript()">
-                Vincular Dados às Unidades
-            </button>
-        </div>
+        <button class="btn-action" onclick="vincularDados()">Vincular Dados às Unidades</button>
     </div>
-</div>
+
+    <div class="card">
+        <span class="section-title">2. Gestão de Unidades</span>
+        <p style="color: #666; font-size: 0.9rem;">As porcentagens serão atualizadas automaticamente após o vínculo acima.</p>
+    </div>
 
 <script>
-    let dadosProcessados = [];
+    let dadosParaEnvio = [];
 
-    document.getElementById('excelInput').addEventListener('change', function(e) {
+    // Função que lê a planilha e prepara os dados
+    document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        document.getElementById('status').innerText = "Processando: " + file.name + "...";
+        document.getElementById('status').innerText = "Lendo planilha...";
         
         const reader = new FileReader();
         reader.onload = function(event) {
-            try {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                
-                // Converte em JSON
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                dadosProcessados = jsonData;
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // Converte o Excel em JSON
+            const json = XLSX.utils.sheet_to_json(sheet);
+            
+            // Filtra apenas o que é essencial para o seu controle
+            dadosParaEnvio = json.map(item => {
+                return {
+                    cnpj: item['CNPJ'] || item['cnpj'], // Ajusta conforme o nome da coluna no seu Excel
+                    percentual: item['Status'] || item['%'] || 0
+                };
+            });
 
-                mostrarPrevia(jsonData);
-                
-                document.getElementById('status').innerText = "✅ " + jsonData.length + " linhas carregadas!";
-                document.getElementById('status').style.color = "green";
-                document.getElementById('btnVincular').style.display = "block";
-            } catch (err) {
-                document.getElementById('status').innerText = "❌ Erro ao ler arquivo!";
-                document.getElementById('status').style.color = "red";
-                console.error(err);
-            }
+            document.getElementById('msgUpload').innerHTML = `<strong>Arquivo: ${file.name}</strong><br>${dadosParaEnvio.length} unidades identificadas.`;
+            document.getElementById('status').innerText = "Pronto para vincular!";
         };
         reader.readAsArrayBuffer(file);
     });
 
-    function mostrarPrevia(data) {
-        const container = document.getElementById('previewContainer');
-        const tbody = document.getElementById('tableBody');
-        const thead = document.getElementById('tableHeader');
-        
-        container.style.display = "block";
-        tbody.innerHTML = "";
-        thead.innerHTML = "";
-
-        if (data.length > 0) {
-            // Cria cabeçalho baseado nas chaves do primeiro objeto
-            Object.keys(data[0]).slice(0, 5).forEach(key => {
-                thead.innerHTML += `<th>${key}</th>`;
-            });
-
-            // Mostra as primeiras 5 linhas como prévia
-            data.slice(0, 5).forEach(row => {
-                let tr = "<tr>";
-                Object.values(row).slice(0, 5).forEach(val => {
-                    tr += `<td>${val}</td>`;
-                });
-                tr += "</tr>";
-                tbody.innerHTML += tr;
-            });
+    // Função que envia para o Apps Script
+    function vincularDados() {
+        if (dadosParaEnvio.length === 0) {
+            alert("Por favor, selecione uma planilha antes de vincular.");
+            return;
         }
-    }
 
-    function vincularAoScript() {
-        // Altere a URL abaixo para a sua URL do Google Apps Script (exec)
-        const urlScript = "https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec";
-        
-        document.getElementById('status').innerText = "Enviando dados para o servidor...";
-        
-        // Exemplo de envio via POST para o seu Google Apps Script
-        fetch(urlScript, {
+        const url = document.getElementById('scriptLink').innerText.trim();
+        document.getElementById('status').innerText = "Atualizando unidades no motor...";
+
+        // Envio para o seu Apps Script
+        fetch(url, {
             method: 'POST',
-            mode: 'no-cors', // Dependendo de como seu Apps Script está configurado
-            cache: 'no-cache',
+            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dadosProcessados)
+            body: JSON.stringify(dadosParaEnvio)
         })
         .then(() => {
-            alert("Dados enviados com sucesso para o Google Sheets!");
-            document.getElementById('status').innerText = "Finalizado com sucesso!";
+            alert("Sucesso! As porcentagens das unidades foram atualizadas.");
+            document.getElementById('status').innerText = "Sincronização concluída.";
         })
         .catch(err => {
-            alert("Erro ao enviar dados.");
             console.error(err);
+            alert("Erro ao conectar com o Apps Script.");
         });
     }
 </script>
