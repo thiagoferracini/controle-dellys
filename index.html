@@ -3,68 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel RNF Profissional | Ailog</title>
+    <title>Dashboard RNF Profissional | Ailog</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { 
-            --primary: #0d2c54; --accent: #1a4a8d; --success: #27ae60; 
-            --warning: #f39c12; --danger: #e74c3c; --hok: #0d2c54; 
-            --oesa: #e67e22; --bg: #f4f7f6; 
-        }
+        :root { --primary: #0d2c54; --accent: #1a4a8d; --success: #27ae60; --hok: #0d2c54; --oesa: #e67e22; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
-        
         .header { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 20px; text-align: center; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
         .control-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
         .input-url { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.8rem; min-width: 300px; }
-        
         .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
         .btn-restore { background: var(--accent); color: white; }
         .btn-sync { background: var(--success); color: white; }
-        .btn-import { background: #f8f9fa; border: 1px solid #ccc; color: var(--primary); }
-
         .grid-unidades { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .card { background: white; border-radius: 12px; padding: 20px; cursor: pointer; border-top: 8px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; transition: 0.3s; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
         .card.hok { border-top-color: var(--hok); }
         .card.oesa { border-top-color: var(--oesa); }
-        
         .progress-bar { background: #eee; border-radius: 10px; height: 10px; width: 100%; margin-top: 5px; overflow: hidden; }
         .progress-fill { height: 100%; transition: 0.5s; }
-
-        /* Modal / Pop-up Estilizado */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
         .modal-content { background: white; margin: 2% auto; padding: 30px; width: 500px; border-radius: 20px; position: relative; max-height: 90vh; overflow-y: auto; }
-        .close { position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 24px; color: var(--danger); font-weight: bold; }
-        
         .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; background: #f8f9fa; padding: 15px; border-radius: 10px; }
-        .finance-item label { font-size: 0.75rem; color: #666; display: block; }
-        .finance-item span { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
-
-        .btn-tool { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; background: white; margin-right: 5px; margin-top: 8px; font-weight: 500; }
-        .btn-tool.active { background: var(--accent); color: white; border-color: var(--accent); }
-        
-        textarea { width: 100%; height: 100px; margin-top: 15px; padding: 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #ddd; resize: none; font-family: inherit; }
-
-        /* Estilo do Histórico */
-        .historico-container { margin-top: 25px; border-top: 2px solid #f0f0f0; padding-top: 15px; }
-        .historico-item { background: #fdfdfd; border-left: 4px solid var(--success); padding: 10px; margin-bottom: 10px; border-radius: 0 8px 8px 0; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .historico-data { font-weight: bold; color: var(--primary); font-size: 0.75rem; display: block; margin-bottom: 4px; }
+        .btn-tool { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; background: white; margin-right: 5px; margin-top: 8px; }
+        .btn-tool.active { background: var(--accent); color: white; }
+        textarea { width: 100%; height: 100px; margin-top: 15px; padding: 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #ddd; resize: none; }
+        .historico-item { background: #fdfdfd; border-left: 4px solid var(--success); padding: 10px; margin-bottom: 10px; border-radius: 0 8px 8px 0; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>Controle RNF | HOK & OESA</h1>
-        <p style="margin:5px 0 0 0; opacity: 0.9;">Monitoramento e Histórico Operacional</p>
     </div>
 
     <div class="control-panel">
         <div style="flex:1">
-            <label style="font-size: 11px; font-weight: bold; color: var(--primary);">URL DO MOTOR GOOGLE:</label>
-            <input type="text" id="scriptUrlField" class="input-url" value="https://script.google.com/macros/s/AKfycbxctdZlWeHciLMfXmm4BjzQA0eyTTMhFmpEb0GIDnFqpLEePB49yDM2mFaqC0FZlxpUkA/exec">
+            <label style="font-size: 11px; font-weight: bold; color: var(--primary);">COLE O NOVO LINK AQUI:</label>
+            <input type="text" id="scriptUrlField" class="input-url" placeholder="https://script.google.com/macros/s/.../exec">
         </div>
-        <button class="btn btn-import" onclick="document.getElementById('fileInput').click()">📂 Importar Planilha</button>
+        <button class="btn" style="background:#eee" onclick="document.getElementById('fileInput').click()">📂 Importar</button>
         <button class="btn btn-restore" onclick="recuperarDados()">🔄 Recuperar Histórico</button>
         <button class="btn btn-sync" onclick="sincronizar()">✅ Sincronizar Agora</button>
         <input type="file" id="fileInput" style="display:none" accept=".xlsx, .xls">
@@ -74,15 +50,10 @@
 
     <div id="modalAtividade" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="fecharModal()">&times;</span>
+            <span style="position:absolute; right:20px; cursor:pointer; font-weight:bold; color:red;" onclick="fecharModal()">FECHAR</span>
             <h2 id="mNome" style="margin:0; color: var(--primary);"></h2>
-            <p id="mCnpj" style="color:#888; font-size:0.8rem; margin-top:5px;"></p>
-            
-            <div class="finance-grid">
-                <div class="finance-item"><label>A Recolher</label><span id="vRecolher">R$ 0,00</span></div>
-                <div class="finance-item"><label>Recolhido</label><span id="vRecolhido">R$ 0,00</span></div>
-            </div>
-
+            <p id="mCnpj" style="color:#888; font-size:0.8rem;"></p>
+            <div class="finance-grid" id="mFinance"></div>
             <strong>Ações Realizadas:</strong>
             <div id="btnGroup">
                 <button class="btn-tool" onclick="this.classList.toggle('active')">📧 E-mail</button>
@@ -90,15 +61,11 @@
                 <button class="btn-tool" onclick="this.classList.toggle('active')">📞 Ligação</button>
                 <button class="btn-tool" onclick="this.classList.toggle('active')">👥 Reunião</button>
             </div>
-            
-            <textarea id="txtAcao" placeholder="Digite aqui o resumo do contato atual..."></textarea>
-            
-            <button class="btn btn-sync" style="width:100%; margin-top:15px; justify-content: center;" onclick="salvarNotaLocal()">Salvar Alteração Local</button>
-
-            <div class="historico-container">
-                <strong style="color: var(--accent); font-size: 0.9rem;">📜 Linha do Tempo (Anotações Anteriores):</strong>
-                <div id="listaHistorico" style="margin-top:12px;">
-                    </div>
+            <textarea id="txtAcao" placeholder="Notas do contato atual..."></textarea>
+            <button class="btn btn-sync" style="width:100%; margin-top:15px; justify-content: center;" onclick="salvarNotaLocal()">Salvar Local</button>
+            <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+                <strong style="color:var(--accent)">📜 Histórico Anterior:</strong>
+                <div id="listaHistorico" style="margin-top:10px;"></div>
             </div>
         </div>
     </div>
@@ -107,14 +74,12 @@
     let dadosFull = [];
     let idxAtivo = null;
 
-    // 1. IMPORTAÇÃO
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
             const data = new Uint8Array(event.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
             const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            
             dadosFull = json.filter(row => {
                 const n = (row['NOME FANTASIA'] || "").toUpperCase();
                 return n.includes("HOK") || n.includes("OESA");
@@ -130,7 +95,6 @@
         reader.readAsArrayBuffer(e.target.files[0]);
     });
 
-    // 2. RENDERIZAÇÃO
     function renderizar() {
         const container = document.getElementById('containerUnidades');
         container.innerHTML = "";
@@ -138,51 +102,29 @@
             const card = document.createElement('div');
             card.className = `card ${u.grupo.toLowerCase()}`;
             card.onclick = () => abrirModal(i);
-            const corBarra = u.perc >= 92 ? '#27ae60' : '#f39c12';
-            card.innerHTML = `
-                <small style="font-weight:bold; color:#999">${u.grupo}</small>
-                <h3 style="margin:5px 0">${u.nome}</h3>
-                <div class="progress-bar"><div class="progress-fill" style="width:${u.perc}%; background:${corBarra}"></div></div>
-                <div style="font-size:12px; margin-top:8px; font-weight:bold">${u.perc.toFixed(2)}% ${u.obs ? '📌' : ''}</div>
-            `;
+            const cor = u.perc >= 92 ? '#27ae60' : '#f39c12';
+            card.innerHTML = `<h3>${u.nome}</h3><div class="progress-bar"><div class="progress-fill" style="width:${u.perc}%; background:${cor}"></div></div><div style="font-size:12px; margin-top:5px">${u.perc.toFixed(2)}% ${u.obs ? '📌' : ''}</div>`;
             container.appendChild(card);
         });
     }
 
-    // 3. MODAL E HISTÓRICO
     function abrirModal(i) {
         idxAtivo = i; const u = dadosFull[i];
         document.getElementById('mNome').innerText = u.nome;
-        document.getElementById('mCnpj').innerText = "CNPJ: " + u.cnpj;
-        document.getElementById('vRecolher').innerText = "R$ " + u.vRecolher.toLocaleString('pt-BR');
-        document.getElementById('vRecolhido').innerText = "R$ " + u.vRecolhido.toLocaleString('pt-BR');
+        document.getElementById('mCnpj').innerText = u.cnpj;
+        document.getElementById('mFinance').innerHTML = `<div>Recolher:<br>R$ ${u.vRecolher}</div><div>Recolhido:<br>R$ ${u.vRecolhido}</div>`;
         document.getElementById('txtAcao').value = u.obs || "";
-        
-        // Resetar e Ativar Botões
-        document.querySelectorAll('.btn-tool').forEach(btn => {
-            btn.classList.remove('active');
-            if (u.acoes && u.acoes.includes(btn.innerText)) btn.classList.add('active');
+        document.querySelectorAll('.btn-tool').forEach(b => {
+            b.classList.remove('active');
+            if(u.acoes && u.acoes.includes(b.innerText)) b.classList.add('active');
         });
-
-        // Construir Histórico Visual
         const listaH = document.getElementById('listaHistorico');
         listaH.innerHTML = "";
-        
         if (u.historico && u.historico.length > 0) {
-            // Mostra do mais novo para o mais velho
             u.historico.slice().reverse().forEach(h => {
-                if(h.obs || h.acoes) {
-                    listaH.innerHTML += `
-                        <div class="historico-item">
-                            <span class="historico-data">📅 ${h.data} ${h.hora || ''}</span>
-                            <strong>${h.acoes || 'Contato'}</strong>: ${h.obs || 'Nenhuma nota registrada.'}
-                        </div>`;
-                }
+                listaH.innerHTML += `<div class="historico-item"><strong>${h.data} ${h.hora || ''}</strong><br>${h.acoes || 'Contato'}: ${h.obs || '-'}</div>`;
             });
-        } else {
-            listaH.innerHTML = "<em style='color:#999; font-size:0.8rem;'>Nenhum histórico anterior para esta unidade.</em>";
         }
-
         document.getElementById('modalAtividade').style.display = "block";
     }
 
@@ -191,39 +133,32 @@
     function salvarNotaLocal() {
         dadosFull[idxAtivo].obs = document.getElementById('txtAcao').value;
         dadosFull[idxAtivo].acoes = Array.from(document.querySelectorAll('.btn-tool.active')).map(b => b.innerText);
-        fecharModal();
-        renderizar();
+        fecharModal(); renderizar();
     }
 
-    // 4. RECUPERAR (MÉTODO PROFISSIONAL)
-    function recuperarDados() {
-        const url = document.getElementById('scriptUrlField').value;
-        if(!url) return alert("URL não encontrada.");
+    // FUNÇÃO DE RECUPERAÇÃO COM TRATAMENTO DE REDIRECIONAMENTO (CORS)
+    async function recuperarDados() {
+        const url = document.getElementById('scriptUrlField').value.trim();
+        if(!url) return alert("Cole o novo link do motor.");
         
-        fetch(url).then(res => res.json()).then(data => {
-            if (data && data.length > 0) {
+        try {
+            const response = await fetch(url, { redirect: 'follow' });
+            if (!response.ok) throw new Error("Link inválido ou desativado (404)");
+            const data = await response.json();
+            if(data && data.length > 0) {
                 dadosFull = data;
                 renderizar();
-                alert("✅ Histórico e sessões recuperadas com sucesso!");
-            } else {
-                alert("Nenhum dado encontrado na base.");
+                alert("✅ Dados e histórico carregados!");
             }
-        }).catch(err => alert("Erro ao conectar: " + err));
+        } catch (err) {
+            alert("Erro: " + err.message + "\n\nVerifique se você publicou como 'Nova Implantação' e definiu acesso para 'Qualquer Pessoa'.");
+        }
     }
 
-    // 5. SINCRONIZAR
     function sincronizar() {
-        const url = document.getElementById('scriptUrlField').value;
-        if (dadosFull.length === 0) return alert("Importe dados primeiro.");
-
-        fetch(url, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({
-                data_importacao: new Date().toLocaleDateString('pt-BR'),
-                unidades: dadosFull
-            })
-        }).then(() => alert("✅ Sincronizado e salvo no histórico da planilha!"));
+        const url = document.getElementById('scriptUrlField').value.trim();
+        fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ data_importacao: new Date().toLocaleDateString('pt-BR'), unidades: dadosFull })})
+        .then(() => alert("✅ Sincronizado!"));
     }
 </script>
 </body>
